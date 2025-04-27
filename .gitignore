@@ -1,0 +1,8 @@
+# Ignore log files
+*.log
+
+# Ignore dependency files
+*.d
+
+# Ignore object files
+*.o
