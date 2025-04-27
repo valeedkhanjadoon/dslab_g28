@@ -319,6 +319,7 @@ main(int argc, char *argv[])
   fuse_argv[fuse_argc++] = "nolocalcaches"; // no dir entry caching
   fuse_argv[fuse_argc++] = "-o";
   fuse_argv[fuse_argc++] = "daemon_timeout=86400";
+  fuse_argv[fuse_argc++] = "-d";
 #endif
 
   // everyone can play, why not?
