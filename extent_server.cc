@@ -16,12 +16,6 @@ extent_server::extent_server() {}
 int extent_server::put(extent_protocol::extentid_t id, std::string buf, int &)
 {
   extent_record *er = new extent_record();
-  // To [put] a file into the system, we need to make sure it not already present.
-  //if (extent_store.count(id) <= 0) {
-  //  er = new extent_record();
-  //} else {
-  //  er = extent_store[id];
-  //}
 
   er->file_data = buf;
   er->file_attributes.mtime = time(NULL);
