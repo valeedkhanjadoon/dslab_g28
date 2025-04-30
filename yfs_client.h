@@ -18,7 +18,7 @@ public:
     RPCERR,
     NOENT,
     IOERR,
-    FBIG
+    EXIST
   };
   typedef int status;
 

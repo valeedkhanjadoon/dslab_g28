@@ -158,7 +158,7 @@ int yfs_client::createfile(inum previous_inum, const char *name, inum &current_i
       if (!strncmp(p, name, strlen(name)))
       {
         delete[] cstr;
-        r = EXIT;
+        r = EXIST;
         goto release;
       }
     }
@@ -178,7 +178,7 @@ int yfs_client::createfile(inum previous_inum, const char *name, inum &current_i
 
   // Add a <name, ina> entry into @parent
   previous_buf.append("/" + filename(file_inum) + "/" + name);
-  if (ec->put(previous_inum, -1, prevous_buf) != extent_protocol::OK)
+  if (ec->put(previous_inum, -1, previous_buf) != extent_protocol::OK)
   {
     r = IOERR;
     goto release;
@@ -195,7 +195,7 @@ int yfs_client::createroot(inum inum, const char *name)
   int r = OK;
   std::string file_buf('/' + filename(inum) + '/' + name);
 
-  if (ec->put(inum, -1, buf) != extent_protocol::OK)
+  if (ec->put(inum, -1, file_buf) != extent_protocol::OK)
   {
     r = IOERR;
     return r;
@@ -238,7 +238,7 @@ int yfs_client::lookup(inum previous_inum, const char *name, inum &current_inum)
     else
     {
       file_buf = p;
-      file_inum = n2i(inum_buf);
+      file_inum = n2i(file_buf);
     }
     p = strtok(NULL, "/");
     count++;
@@ -257,7 +257,7 @@ int yfs_client::readdir(inum previous_inum, std::vector<dirent> &r_dirent)
   int count = 0;
   std::string previous_buf;
   char *cstr, *p;
-  inum file_inum;
+  std::string file_buf;
   dirent current_dirent;
 
   // Read parent directory and check if name already exists
@@ -276,11 +276,11 @@ int yfs_client::readdir(inum previous_inum, std::vector<dirent> &r_dirent)
     // Skip its own directory name and inum
     if ((count && count != 1) && count % 2 == 1) {
       current_dirent.name = p;
-      r_dirent.push_back(curr_dirent);
+      r_dirent.push_back(current_dirent);
     }
     else {
       file_buf = p;
-      current_dirent.inum = n2i(file_inum);
+      current_dirent.inum = n2i(file_buf);
     }
     p = strtok(NULL, "/");
     count++;
@@ -295,7 +295,7 @@ int yfs_client::readdir(inum previous_inum, std::vector<dirent> &r_dirent)
 int yfs_client::read(inum in_inum, off_t off, size_t size, std::string &buf)
 {
   int r = OK;
-  printf("[yfs_client::read] File: %016llx, off: %ld, size: %u\n", in_inum, (long int)off, size);
+  printf("[yfs_client::read] File: %016llx, off: %ld, size: %lu\n", in_inum, (long int)off, size);
 
   if (ec->get(in_inum, (int)off, (unsigned int)size, buf) != extent_protocol::OK)
   {
@@ -311,7 +311,7 @@ int yfs_client::write(inum in_inum, const char *buf, off_t off, size_t size)
 {
   std::string file_buf;
   int r = OK;
-  printf("[yfs_client::write] File: %016llx, off: %ld, size: %u\n", in_inum, (long int)off, size);
+  printf("[yfs_client::write] File: %016llx, off: %ld, size: %lu\n", in_inum, (long int)off, size);
 
   file_buf.append(buf, size);
   if (ec->put(in_inum, (int)off, file_buf) != extent_protocol::OK)
