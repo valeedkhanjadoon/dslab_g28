@@ -2,48 +2,64 @@
 #define yfs_client_h
 
 #include <string>
-//#include "yfs_protocol.h"
+// #include "yfs_protocol.h"
 #include "extent_client.h"
 #include <vector>
 
-
-  class yfs_client {
+class yfs_client
+{
   extent_client *ec;
- public:
 
+public:
   typedef unsigned long long inum;
-  enum xxstatus { OK, RPCERR, NOENT, IOERR, FBIG };
+  enum xxstatus
+  {
+    OK,
+    RPCERR,
+    NOENT,
+    IOERR,
+    FBIG
+  };
   typedef int status;
 
-  struct fileinfo {
+  struct fileinfo
+  {
     unsigned long long size;
     unsigned long atime;
     unsigned long mtime;
     unsigned long ctime;
   };
-  struct dirinfo {
+  struct dirinfo
+  {
     unsigned long atime;
     unsigned long mtime;
     unsigned long ctime;
   };
-  struct dirent {
+  struct dirent
+  {
     std::string name;
     unsigned long long inum;
   };
 
- private:
+private:
   static std::string filename(inum);
   static inum n2i(std::string);
- public:
-
+  static inum new_inum(bool isfile);
+public:
   yfs_client(std::string, std::string);
 
   bool isfile(inum);
   bool isdir(inum);
-  inum ilookup(inum di, std::string name);
 
   int getfile(inum, fileinfo &);
   int getdir(inum, dirinfo &);
+  int setattr(inum, fileinfo &);
+  int createfile(inum, const char *, inum &);
+  int createroot(inum, const char *);
+  int lookup(inum, const char *, inum &);
+  int readdir(inum, std::vector<dirent> &);
+  int read(inum, off_t off, size_t size, std::string &);
+  int write(inum, const char *, off_t off, size_t size);
 };
 
-#endif 
+#endif
