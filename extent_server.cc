@@ -8,23 +8,28 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-extent_server::extent_server() {}
+extent_server::extent_server() {
+  pthread_mutex_init(&extent_server_mutex, NULL);
+}
 
 /*
   The put RPC is used to update an extent's content.
 */
 int extent_server::put(extent_protocol::extentid_t id, std::string buf, int &)
 {
+  pthread_mutex_lock(&extent_server_mutex);
   extent_record *er = new extent_record();
 
   er->file_data = buf;
   er->file_attributes.mtime = time(NULL);
   er->file_attributes.atime = time(NULL);
   er->file_attributes.ctime = time(NULL);
+  er->file_attributes.size = buf.length();
 
   extent_store[id] = er;
   printf("[extent_server::put] File (%016llx) added.\n", id);
 
+  pthread_mutex_unlock(&extent_server_mutex);
   return extent_protocol::OK;
 }
 
@@ -40,10 +45,12 @@ int extent_server::get(extent_protocol::extentid_t id, std::string &buf)
     
     // Get the data, put it in the callback variable 'buf'
     buf = er->file_data;
-
+    
     // Update the access time
+    pthread_mutex_lock(&extent_server_mutex);
     er->file_attributes.atime = time(NULL);
     extent_store[id] = er;
+    pthread_mutex_unlock(&extent_server_mutex);
 
     printf("[extent_server::get] File (%016llx) found.\n", id);
     return extent_protocol::OK;
@@ -91,8 +98,10 @@ int extent_server::getattr(extent_protocol::extentid_t id, extent_protocol::attr
 */
 int extent_server::remove(extent_protocol::extentid_t id, int &)
 {
+  pthread_mutex_lock(&extent_server_mutex);
   delete(extent_store[id]); // Free the heap memory (the pointer)
   extent_store.erase(id); // Remove the key-value pair from the extent_store map
+  pthread_mutex_unlock(&extent_server_mutex);
 
   printf("[extent_server::remove] File (%016llx) removed.\n", id);
   return extent_protocol::OK;

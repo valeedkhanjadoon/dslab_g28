@@ -18,6 +18,7 @@
 #include <string>
 #include <map>
 #include "extent_protocol.h"
+#include <pthread.h>
 
 class extent_server {
  protected:
@@ -30,6 +31,7 @@ class extent_server {
   // We are not using a db here. So, the data will be deleted once the server is closed.
   // But, we have create a key-value store to book-keep files data.
   std::map<extent_protocol::extentid_t, extent_record *> extent_store;
+  pthread_mutex_t extent_server_mutex;
 
  public:
   extent_server();
