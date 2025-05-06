@@ -158,7 +158,7 @@ fuseserver_createhelper(fuse_ino_t parent, const char *name,
 
   // Create file
   yfs_client::inum file_inum;
-  ret = yfs->create_file(parent_inum, name, file_inum, true);
+  ret = yfs->create(parent_inum, name, file_inum, true);
 
   if (ret == yfs_client::OK) {
     struct stat st;

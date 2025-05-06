@@ -159,6 +159,28 @@ int yfs_client::create(inum parent_inum, const char * name, inum & file_inum, bo
     return ret;
 }
 
+bool
+yfs_client::is_exist(inum parent_inum, const char * name){
+  std::string directory_content;
+  
+  // The directory does not exist probably.
+  if (ec->get(parent_inum, directory_content) != extent_protocol::OK) {
+    printf("[IS_EXIST] Failed to get directory content.\n");
+  }
+
+  // After you have the directory contents, unserialize them and create a list
+  std::list<yfs_client::dirent> list = yfs_unserialize(directory_content);
+
+  // Iterate through the directory content and see if the file exists
+  std::list<yfs_client::dirent>::iterator it = list.begin();
+  while (it != list.end()) {
+    if (strcmp(name, (*it).name.c_str()) == 0)
+      return true;
+    ++it;
+  }
+  return false;
+}
+
 
 
 /*
