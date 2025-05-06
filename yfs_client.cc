@@ -181,8 +181,6 @@ yfs_client::is_exist(inum parent_inum, const char * name){
   return false;
 }
 
-
-
 /*
   So, you take an object and convert it into a string.
   Similar to a key value pair.
@@ -194,5 +192,27 @@ yfs_client::serialize_dirent(yfs_client::dirent dirent){
   result.append(":");
   result.append(dirent.name);
   result.append(";");
+  return result;
+}
+
+std::list<yfs_client::dirent>
+yfs_client::unserialize(std::string str) {
+  std::list<yfs_client::dirent> result;
+
+  std::isstringstream f(str);
+  std::string s;
+
+  while (std::getline(f, s, ';')) {
+    std::string inum_string = s.substr(0, s.find(":"));
+    yfs_client::inum inum = n2i(inum_string);
+    std::string name = s.substr(s.find(":") + 1);
+
+    struct yfs_client::dirent dir_ent;
+    dir_ent.inum = inum;
+    dir_ent.name = name;
+
+    result.push_back(dir_ent);
+  }
+
   return result;
 }

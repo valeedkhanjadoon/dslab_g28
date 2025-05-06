@@ -50,10 +50,11 @@
   int create(inum, const char *, inum &, bool);
 
   // misc. functions
-  int is_exist(inum, const char *);
+  bool is_exist(inum, const char *);
 
   // serialization functions
   std::string serialize_dirent(yfs_client::dirent);
+  std::list<yfs_client::dirent> unserialize(std::string);
 };
 
 #endif 
