@@ -48,6 +48,9 @@
 
   // Lab 02 functions
   int create(inum, const char *, inum &, bool);
+
+  // processing functions
+  std::string serialize_dirent(yfs_client::dirent);
 };
 
 #endif 

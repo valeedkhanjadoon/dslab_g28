@@ -118,7 +118,7 @@ int yfs_client::create(inum parent_inum, const char * name, inum & file_inum, bo
   status ret;
 
   // Give a unique inum to the file/directory
-  file_inum = yfs_client::generate_inum(name,isfile);
+  file_inum = yfs_client::generate_inum(isfile);
 
   // Initial content is for when the file is created
   std::string initial_content;
