@@ -1,0 +1,14 @@
+# Ignore log files
+*.log
+
+# Ignore dependancy files
+*.d
+
+# Ignore object files
+*.o
+
+# Ignore static libraries
+*.a
+
+# Ignore Json files
+*.json
