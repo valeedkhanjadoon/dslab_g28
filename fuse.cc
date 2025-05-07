@@ -25,8 +25,7 @@ int id() {
   return myid;
 }
 
-yfs_client::status
-getattr(yfs_client::inum inum, struct stat &st)
+yfs_client::status getattr(yfs_client::inum inum, struct stat &st)
 {
   yfs_client::status ret;
 
@@ -121,12 +120,61 @@ fuseserver_write(fuse_req_t req, fuse_ino_t ino,
 #endif
 }
 
+/*
+  Create file @name in directory @parent
+
+  - @mode specifics the create mode of the file. Ignore it - you do
+    not have to implement file mode.
+  - If a file named @name already exists in @parent, return EXIST
+  - Pick an ino (with type of yfs_client::inum) for file name.
+    Make sure ino indicates a file, not a directory!
+  - Create an empty extent for ino
+  - Add a <name, ino> entry into @parent.
+  - Change the parent's mtime and ctime to the current time/date
+    (this may fall naturally out of your extent server code)
+  - On success, store the inum of newly created file into @e->ino,
+    and the new file's attributes into @e->attr. Get the file's
+    attributes with getattr().
+*/
 yfs_client::status
 fuseserver_createhelper(fuse_ino_t parent, const char *name,
      mode_t mode, struct fuse_entry_param *e)
 {
+  // In yfs, timeouts are always set to 0.0, and generations are always set to 0
+  e->attr_timeout = 0.0;
+  e->entry_timeout = 0.0;
+  e->generation = 0;
+
   // You fill this in
-  return yfs_client::NOENT;
+  yfs_client::status ret; // final status result
+  yfs_client::inum parent_inum = parent;
+
+  // Important Step: Check whether file name exists in the parent
+  // directory
+  if (yfs->is_exist(parent_inum, name)) {
+    ret = yfs_client::EXIST;
+    return ret;
+  }
+
+  // Create file
+  yfs_client::inum file_inum;
+  ret = yfs->create(parent_inum, name, file_inum, true);
+
+  if (ret == yfs_client::OK) {
+    struct stat st;
+    e->ino = file_inum;
+
+    // Get the file attributes, you get the attributes in the
+    // callback @st variable
+    ret = getattr(file_inum, st);
+
+    if (ret == yfs_client::OK) {
+      e->attr = st;
+      return ret;
+    }
+  }
+
+  return ret;
 }
 
 void

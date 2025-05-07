@@ -12,7 +12,7 @@
  public:
 
   typedef unsigned long long inum;
-  enum xxstatus { OK, RPCERR, NOENT, IOERR, FBIG };
+  enum xxstatus { OK, RPCERR, NOENT, IOERR, FBIG, EXIST };
   typedef int status;
 
   struct fileinfo {
@@ -34,6 +34,7 @@
  private:
   static std::string filename(inum);
   static inum n2i(std::string);
+  static inum generate_inum(bool);
  public:
 
   yfs_client(std::string, std::string);
@@ -44,6 +45,16 @@
 
   int getfile(inum, fileinfo &);
   int getdir(inum, dirinfo &);
+
+  // Lab 02 functions
+  int create(inum, const char *, inum &, bool);
+
+  // misc. functions
+  bool is_exist(inum, const char *);
+
+  // serialization functions
+  std::string serialize_dirent(yfs_client::dirent);
+  std::list<yfs_client::dirent> unserialize(std::string);
 };
 
 #endif 
