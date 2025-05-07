@@ -83,7 +83,7 @@ int extent_server::remove(extent_protocol::extentid_t id, int &)
 {
   if (extent_store.count(id) > 0) {
     pthread_mutex_lock(&extent_server_mutex);
-    delete(extent_server[id]); // Free the heap memory (the pointer)
+    delete(extent_store[id]); // Free the heap memory (the pointer)
     extent_store.erase(id); // Remove the key-value pair from the extent_store map
     pthread_mutex_unlock(&extent_server_mutex);
 

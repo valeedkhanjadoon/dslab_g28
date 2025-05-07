@@ -13,7 +13,7 @@ class extent_server {
   struct extent_record {
     std::string file_data;
     extent_protocol::attr file_attributes;
-  }
+  };
 
   // We have to use a key value store to book-keep files.
   std::map<extent_protocol::extentid_t, extent_record *> extent_store;

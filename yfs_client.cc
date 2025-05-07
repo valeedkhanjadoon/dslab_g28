@@ -169,7 +169,7 @@ yfs_client::is_exist(inum parent_inum, const char * name){
   }
 
   // After you have the directory contents, unserialize them and create a list
-  std::list<yfs_client::dirent> list = yfs_unserialize(directory_content);
+  std::list<yfs_client::dirent> list = yfs_client::unserialize(directory_content);
 
   // Iterate through the directory content and see if the file exists
   std::list<yfs_client::dirent>::iterator it = list.begin();
@@ -199,7 +199,7 @@ std::list<yfs_client::dirent>
 yfs_client::unserialize(std::string str) {
   std::list<yfs_client::dirent> result;
 
-  std::isstringstream f(str);
+  std::istringstream f(str);
   std::string s;
 
   while (std::getline(f, s, ';')) {
