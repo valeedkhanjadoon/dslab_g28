@@ -159,6 +159,34 @@ int yfs_client::create(inum parent_inum, const char * name, inum & file_inum, bo
     return ret;
 }
 
+/*
+  This is a function to get inum of a file based on it's name and which directory it resides.
+*/
+int
+yfs_client::get_inum(inum parent_inum, const char * name, inum & file_inum) {
+  yfs_client::status ret = yfs_client::OK;
+
+  std::string directory_content;
+
+  if (ec->get(parent_inum, directory_content) != extent_protocol::OK){
+    ret = IOERR;
+    return ret;
+  }
+
+  std::list<yfs_client::dirent> list = yfs_client::unserialize(directory_content);
+
+  std::list<yfs_client::dirent>::iterator it = list.begin();
+  while (it != list.end()){
+    if (strcmp(name, (*it).name.c_str()) == 0){
+      file_inum = (*it).inum;
+      ret = yfs_client::OK;
+      break;
+    }
+    ++it;
+  }
+  return ret;
+}
+
 bool
 yfs_client::is_exist(inum parent_inum, const char * name){
   std::string directory_content;
@@ -179,6 +207,19 @@ yfs_client::is_exist(inum parent_inum, const char * name){
     ++it;
   }
   return false;
+}
+
+std::string
+yfs_client::serialize(std::list<yfs_client::dirent> dirent_list){
+  std::string result;
+  std::list<yfs_client::dirent>::iterator it = dirent_list.begin();
+  while(it != dirent_list.end()){
+    result.append(filename((*it).inum));
+    result.append(":");
+    result.append((*it).name);
+    result.append(";");
+  }
+  return result;
 }
 
 /*
@@ -215,4 +256,114 @@ yfs_client::unserialize(std::string str) {
   }
 
   return result;
+}
+
+int
+yfs_client::get_dir_ent(inum par_inum, std::list<dirent> &list){
+  status ret;
+  // std::map<yfs_client::inum, std::list<dirent> >::iterator it = dir_dirent_map.find(par_inum);
+  std::string content;
+  if(ec->get(par_inum, content) != extent_protocol::OK){
+    ret = IOERR;
+    return ret;
+  }
+  list = unserialize(content);
+  ret = OK;
+  return ret;
+}
+
+int
+yfs_client::set_attr_size(inum file_inum, size_t size){
+  yfs_client::status ret;
+  std::string content;
+  std::string new_content;
+  if(!isfile(file_inum)){
+    ret = NOENT;
+    goto release;
+  }
+
+  if((int)size >= 0){
+    
+    extent_protocol::status rr = ec->get(file_inum, content);
+    if(ec->get(file_inum, content) != extent_protocol::OK){
+      ret = IOERR;
+      goto release;
+    }
+    if((int)size < content.size()){
+      new_content = content.substr(0, size);
+    }else if((int)size > content.size()){
+      new_content = content;
+      new_content.append(size - content.size(), '\0');
+    }else{
+      ret = OK;
+      goto release;
+    }
+
+    if(ec->put(file_inum, new_content) != extent_protocol::OK){
+      ret = IOERR;
+      goto release;
+    }
+
+  }
+  ret = OK;
+
+  release:
+  return ret;
+
+}
+
+int 
+yfs_client::read(inum file_inum, size_t size, off_t off, std::string &buf){
+  yfs_client::status ret;
+  std::string content;
+  if(ec->get(file_inum, content) != extent_protocol::OK){
+    ret = IOERR;
+    goto release;
+  }
+
+  if(off < content.size()){
+    buf = content.substr(off, size);
+  }
+
+  ret = yfs_client::OK;
+
+  release:
+  return ret;
+
+}
+
+int
+yfs_client::write(inum file_inum, const char * buf, size_t size, off_t off){
+  yfs_client::status ret;
+  std::string content;
+  std::string added_content;
+  std::string new_content;
+  if(ec->get(file_inum, content) != extent_protocol::OK){
+    ret = IOERR;
+    goto release;
+  }
+
+  added_content.append(buf, size);
+
+  if(off <= content.size()){
+    new_content.append(content.substr(0, off));
+    new_content.append(added_content);
+    if(off + size < content.size()){
+      new_content.append(content.substr(off + size));
+    }
+  }else{
+    new_content.append(content);
+    new_content.append(off - content.size(), '\0');
+    new_content.append(added_content);
+  }
+
+  if(ec->put(file_inum, new_content) != extent_protocol::OK){
+    ret = IOERR;
+    goto release;
+  }
+
+  ret = OK;
+
+  release:
+  return ret;
 }

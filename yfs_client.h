@@ -1,9 +1,8 @@
 #ifndef yfs_client_h
 #define yfs_client_h
 
-#include <string>
-//#include "yfs_protocol.h"
 #include "extent_client.h"
+#include <string>
 #include <vector>
 
 
@@ -41,18 +40,23 @@
 
   bool isfile(inum);
   bool isdir(inum);
-  inum ilookup(inum di, std::string name);
 
   int getfile(inum, fileinfo &);
   int getdir(inum, dirinfo &);
 
   // Lab 02 functions
   int create(inum, const char *, inum &, bool);
+  int get_dir_ent(inum, std::list<dirent> &);
+  int set_attr_size(inum, size_t);
+  int read(inum, size_t, off_t, std::string &);
+  int write(inum, const char *, size_t, off_t);
 
   // misc. functions
   bool is_exist(inum, const char *);
+  int get_inum(inum, const char *, inum &);
 
   // serialization functions
+  std::string serialize(std::list<dirent>);
   std::string serialize_dirent(yfs_client::dirent);
   std::list<yfs_client::dirent> unserialize(std::string);
 };
