@@ -9,88 +9,101 @@
 #include <fcntl.h>
 
 extent_server::extent_server() {
-  pthread_mutex_init(&extent_server_mutex, NULL);
+   VERIFY(pthread_mutex_init(&extstore_mutex,0) == 0);
 }
 
+extent_server::~extent_server() {
+   VERIFY(pthread_mutex_destroy(&extstore_mutex) == 0);
+}
 
-int extent_server::put(extent_protocol::extentid_t id, std::string buf, int &)
+int extent_server::put(extent_protocol::extentid_t id, int off, std::string buf, int &r)
 {
-  pthread_mutex_lock(&extent_server_mutex);
+  // You fill this in for Lab 2.
+  // New Entry addedi
+  r = extent_protocol::OK;
+  ScopedLock ml(&extstore_mutex); 
+  extent_value *extent_obj;
+  if (extent_store.count(id) <= 0) 
+     extent_obj = new extent_value();
+  else 
+     extent_obj = extent_store[id];
+  
+  if (off < 0) 
+     extent_obj->data = buf;
+  else {
+     if (off > extent_obj->ext_attr.size) {
+         extent_obj->data.resize(off);
+         extent_obj->data.append(buf);
+     }
+     else if (buf != "") 
+	extent_obj->data.replace(off,buf.size(), buf);
+     else
+	extent_obj->data.resize(off);
+  }
+  extent_obj->ext_attr.mtime = extent_obj->ext_attr.ctime = time(NULL);
+  extent_obj->ext_attr.size = extent_obj->data.size();
+  extent_store[id] = extent_obj;
+  printf("extent_server::put, extent_store: id %016llx, buf %s\n", id, buf.c_str());
 
-  extent_record *er = new extent_record();
-
-  er->file_data = buf;
-  er->file_attributes.mtime = time(NULL);
-  er->file_attributes.ctime = time(NULL);
-  er->file_attributes.atime = time(NULL);
-  er->file_attributes.size = buf.length();
-
-  extent_store[id] = er;
-  printf("[extent_server::put] File (%016llx) added.\n", id);
-
-  pthread_mutex_unlock(&extent_server_mutex);
+  //return extent_protocol::IOERR;
   return extent_protocol::OK;
 }
 
-int extent_server::get(extent_protocol::extentid_t id, std::string &buf)
+int extent_server::get(extent_protocol::extentid_t id, int off, unsigned int size, std::string &buf)
 {
-  // We create the record so we can update the last access time quickly.
-  extent_record *er = new extent_record();
-
+  // You fill this in for Lab 2.
+  ScopedLock ml(&extstore_mutex);
+  extent_value *extent_obj;
   if (extent_store.count(id) > 0) {
-    er = extent_store[id];
+    printf("extent_server::get entry present for %016llx returning back! \n", id);
+    extent_obj = extent_store[id];
+    if (off < 0)
+       buf = extent_obj->data;
+    else if (extent_obj->ext_attr.size < off)
+       buf = '\0';
+    else 
+       buf = extent_obj->data.substr(off, size);
 
-    // Get the data from er instance and assign it to the call back variable 'buf'
-    buf = er->file_data;
-
-    // Update the last access time and re-update the extent store
-    pthread_mutex_lock(&extent_server_mutex);
-    er->file_attributes.atime = time(NULL);
-    extent_store[id] = er;
-    pthread_mutex_unlock(&extent_server_mutex);
-
-    printf("[extent_server::get] File %016llx found.", id);
+    extent_obj->ext_attr.atime = time(NULL);
+    extent_store[id] = extent_obj;
     return extent_protocol::OK;
   }
-
-  // If the file was not found. Let the user know
+  printf("extent_server::get entry not present for %016llx \n", id);
   return extent_protocol::NOENT;
 }
 
 int extent_server::getattr(extent_protocol::extentid_t id, extent_protocol::attr &a)
 {
+  // You fill this in for Lab 2.
   // You replace this with a real implementation. We send a phony response
   // for now because it's difficult to get FUSE to do anything (including
   // unmount) if getattr fails.
-  extent_record *er = new extent_record();
+  extent_value *extent_obj;
   if (extent_store.count(id) > 0) {
-    er = extent_store[id];
-
-    a.mtime = er->file_attributes.mtime;
-    a.ctime = er->file_attributes.ctime;
-    a.atime = er->file_attributes.atime;
-    a.size = er->file_attributes.size;
-
-    printf("[extent_server::getattr] File (%016llx) found. Returning attributes.\n", id);
-    return extent_protocol::OK;
+  printf("extent_server::getattr returning from store for %016llx \n", id);
+  extent_obj = extent_store[id];
+  a.size = extent_obj->ext_attr.size;
+  a.atime = extent_obj->ext_attr.atime;
+  a.mtime = extent_obj->ext_attr.mtime;
+  a.ctime = extent_obj->ext_attr.ctime;
+  } else {
+  //change once confident
+  a.size = 0;
+  a.atime = 0;
+  a.mtime = 0;
+  a.ctime = 0;
   }
 
-  printf("[extent_server::getattr] File (%016llx) NOT found.\n", id);
-  return extent_protocol::NOENT;
+  return extent_protocol::OK;
 }
 
 int extent_server::remove(extent_protocol::extentid_t id, int &)
 {
-  if (extent_store.count(id) > 0) {
-    pthread_mutex_lock(&extent_server_mutex);
-    delete(extent_store[id]); // Free the heap memory (the pointer)
-    extent_store.erase(id); // Remove the key-value pair from the extent_store map
-    pthread_mutex_unlock(&extent_server_mutex);
-
-    printf("[extent_server::remove] File (%016llx) found and removed.\n", id);
-  }
-
-  printf("[extent_server::remove] File (%016llx) NOT found.\n");
-  return extent_protocol::NOENT;
+  // You fill this in for Lab 2.
+  ScopedLock ml(&extstore_mutex);
+  delete(extent_store[id]);
+  extent_store.erase(id); 
+//  return extent_protocol::IOERR;
+  return extent_protocol::OK;
 }
 

@@ -1,17 +1,18 @@
 #ifndef yfs_client_h
 #define yfs_client_h
 
-#include "extent_client.h"
 #include <string>
+//#include "yfs_protocol.h"
+#include "extent_client.h"
 #include <vector>
 
 
-  class yfs_client {
+class yfs_client {
   extent_client *ec;
  public:
 
   typedef unsigned long long inum;
-  enum xxstatus { OK, RPCERR, NOENT, IOERR, FBIG, EXIST };
+  enum xxstatus { OK, RPCERR, NOENT, IOERR, EXIST };
   typedef int status;
 
   struct fileinfo {
@@ -27,13 +28,13 @@
   };
   struct dirent {
     std::string name;
-    unsigned long long inum;
+    yfs_client::inum inum;
   };
 
  private:
   static std::string filename(inum);
   static inum n2i(std::string);
-  static inum generate_inum(bool);
+  static inum new_inum(bool isfile);
  public:
 
   yfs_client(std::string, std::string);
@@ -43,22 +44,14 @@
 
   int getfile(inum, fileinfo &);
   int getdir(inum, dirinfo &);
-
-  // Lab 02 functions
-  int create(inum, const char *, inum &, bool);
-  int get_dir_ent(inum, std::list<dirent> &);
-  int set_attr_size(inum, size_t);
-  int read(inum, size_t, off_t, std::string &);
-  int write(inum, const char *, size_t, off_t);
-
-  // misc. functions
-  bool is_exist(inum, const char *);
-  int get_inum(inum, const char *, inum &);
-
-  // serialization functions
-  std::string serialize(std::list<dirent>);
-  std::string serialize_dirent(yfs_client::dirent);
-  std::list<yfs_client::dirent> unserialize(std::string);
+  int setattr(inum, fileinfo &);
+  int createfile(inum, const char *, inum &);
+  int createdir(inum, const char *, inum &);
+  int createroot(inum, const char *);
+  int lookup(inum, const char *, inum &);
+  int readdir(inum, std::vector<dirent> &);
+  int read(inum, off_t off, size_t size, std::string &);
+  int write(inum, const char *, off_t off, size_t size);
 };
 
 #endif 
