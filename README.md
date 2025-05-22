@@ -22,3 +22,8 @@ SHA256 Checksum: -
 SHA256 Checksum: 20646ae0a934bc8415abd4bfbc0ff1067305a9f551e04688f1c0270947090503
 
 ---
+
+# Lab 05 Submission:
+SHA256 Checksum: 7b67ed24668b5f82d188acda556c3324dd0c2f3a08c050f38126728703e56aa8
+
+---
