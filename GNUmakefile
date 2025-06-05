@@ -66,16 +66,16 @@ lock_demo : $(patsubst %.cc,%.o,$(lock_demo)) rpc/librpc.a
 
 lock_tester=lock_tester.cc lock_client.cc
 ifeq ($(LAB5GE),1)
-lock_tester += lock_client_cache.cc
+lock_tester += lock_client_cache.cc handle.cc
 endif
 ifeq ($(LAB8GE),1)
-lock_tester+=rsm_client.cc
+lock_tester+=rsm_client.cc handle.cc
 endif
 lock_tester : $(patsubst %.cc,%.o,$(lock_tester)) rpc/librpc.a
 
 lock_server=lock_server.cc lock_smain.cc
 ifeq ($(LAB5GE),1)
-lock_server+=lock_server_cache.cc
+lock_server+=lock_server_cache.cc handle.cc
 endif
 ifeq ($(LAB7GE),1)
 lock_server+= $(rsm_files)
