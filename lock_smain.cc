@@ -2,8 +2,9 @@
 #include <arpa/inet.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <unistd.h>
 #include "lock_server_cache.h"
+#include "paxos.h"
+#include "rsm.h"
 
 #include "jsl_log.h"
 
@@ -18,9 +19,9 @@ int main(int argc, char *argv[])
 
   srandom(getpid());
 
-  if (argc != 2)
+  if (argc != 3)
   {
-    fprintf(stderr, "Usage: %s port\n", argv[0]);
+    fprintf(stderr, "Usage: %s [master:]port [me:]port\n", argv[0]);
     exit(1);
   }
 
@@ -32,13 +33,10 @@ int main(int argc, char *argv[])
 
   // jsl_set_debug(2);
 
-#ifndef RSM
-  lock_server_cache ls;
-  rpcs server(atoi(argv[1]), count);
-  server.reg(lock_protocol::stat, &ls, &lock_server_cache::stat);
-  server.reg(lock_protocol::acquire, &ls, &lock_server_cache::acquire);
-  server.reg(lock_protocol::release, &ls, &lock_server_cache::release);
-#endif
+#define RSM
+#ifdef RSM
+  rsm rsm(argv[1], argv[2]);
+#endif // RSM
 
   while (1)
     sleep(1000);
