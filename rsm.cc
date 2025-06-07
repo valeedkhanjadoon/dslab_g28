@@ -85,6 +85,7 @@
 #include "rsm.h"
 #include "tprintf.h"
 #include "lang/verify.h"
+#include <unistd.h>
 
 static void *
 recoverythread(void *x)
