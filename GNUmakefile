@@ -40,15 +40,16 @@ lab4: yfs_client extent_server lock_server test-lab-4-b test-lab-4-c
 lab5: yfs_client extent_server lock_server lock_tester test-lab-4-b\
 	 test-lab-4-c
 lab6: yfs_client extent_server lock_server test-lab-4-b test-lab-4-c
-lab7: lock_server
+lab7: lock_server rsm_tester
 lab8: lock_tester lock_server
 
 hfiles1=rpc/fifo.h rpc/connection.h rpc/rpc.h rpc/marshall.h rpc/method_thread.h\
 	rpc/thr_pool.h rpc/pollmgr.h rpc/jsl_log.h rpc/slock.h rpc/rpctest.cc\
-	lock_protocol.h lock_server.h lock_client.h gettime.h gettime.cc
+	lock_protocol.h lock_server.h lock_client.h gettime.h gettime.cc lang\verify.h \
+	lang\algorithm.h
 hfiles2=yfs_client.h extent_client.h extent_protocol.h extent_server.h
-hfiles3=lock_client_cache.h lock_server_cache.h
-hfiles4=log.h rsm.h rsm_protocol.h config.h paxos.h paxos_protocol.h rsm_state_transfer.h handle.h
+hfiles3=lock_client_cache.h lock_server_cache.h handle.h tprintf.h
+hfiles4=log.h rsm.h rsm_protocol.h config.h paxos.h paxos_protocol.h rsm_state_transfer.h handle.h rsmtest_client.h tprintf.h
 hfiles5=rsm_state_transfer.h rsm_client.h
 rsm_files = rsm.cc paxos.cc config.cc log.cc handle.cc
 
@@ -69,7 +70,7 @@ ifeq ($(LAB5GE),1)
 lock_tester += lock_client_cache.cc handle.cc
 endif
 ifeq ($(LAB8GE),1)
-lock_tester+=rsm_client.cc handle.cc
+lock_tester+=rsm_client.cc handle.cc lock_client_cache_rsm.cc
 endif
 lock_tester : $(patsubst %.cc,%.o,$(lock_tester)) rpc/librpc.a
 
@@ -80,6 +81,9 @@ endif
 ifeq ($(LAB7GE),1)
 lock_server+= $(rsm_files)
 endif
+ifeq ($(LAB8GE),1)
+lock_server+= lock_server_cache_rsm.cc
+endif
 lock_server : $(patsubst %.cc,%.o,$(lock_server)) rpc/librpc.a
 
 yfs_client=yfs_client.cc extent_client.cc fuse.cc
@@ -87,7 +91,7 @@ ifeq ($(LAB4GE),1)
 yfs_client += lock_client.cc
 endif
 ifeq ($(LAB8GE),1)
-yfs_client += rsm_client.cc
+yfs_client += rsm_client.cc lock_client_cache_rsm.cc
 endif
 ifeq ($(LAB5GE),1)
 yfs_client += lock_client_cache.cc
@@ -102,6 +106,9 @@ test-lab-4-b:  $(patsubst %.c,%.o,$(test_lab_4-b)) rpc/librpc.a
 
 test-lab-4-c=test-lab-4-c.c
 test-lab-4-c:  $(patsubst %.c,%.o,$(test_lab_4-c)) rpc/librpc.a
+
+rsm_tester=rsm_tester.cc rsmtest_client.cc
+rsm_tester: $(patsubst %.cc,%.o,$(rsm_tester)) rpc/librpc.a
 
 %.o: %.cc
 	$(CXX) $(CXXFLAGS) -c $< -o $@
