@@ -3,45 +3,55 @@
 
 #include "rpc.h"
 
-struct prop_t {
+struct prop_t
+{
   unsigned n;
   std::string m;
 };
 
-class paxos_protocol {
- public:
-  enum xxstatus { OK, ERR };
+class paxos_protocol
+{
+public:
+  enum xxstatus
+  {
+    OK,
+    ERR
+  };
   typedef int status;
-  enum rpc_numbers {
+  enum rpc_numbers
+  {
     preparereq = 0x11001,
     acceptreq,
     decidereq,
     heartbeat,
   };
 
-  struct preparearg {
+  struct preparearg
+  {
     unsigned instance;
     prop_t n;
   };
 
-  struct prepareres {
+  struct prepareres
+  {
     bool oldinstance;
     bool accept;
     prop_t n_a;
     std::string v_a;
   };
 
-  struct acceptarg {
+  struct acceptarg
+  {
     unsigned instance;
     prop_t n;
     std::string v;
   };
 
-  struct decidearg {
+  struct decidearg
+  {
     unsigned instance;
     std::string v;
   };
-
 };
 
 inline unmarshall &

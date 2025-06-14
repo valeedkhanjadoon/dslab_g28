@@ -3,20 +3,28 @@
 
 #include "rpc.h"
 
-
-class rsm_client_protocol {
- public:
-  enum xxstatus { OK, ERR, NOTPRIMARY, BUSY};
+class rsm_client_protocol
+{
+public:
+  enum xxstatus
+  {
+    OK,
+    ERR,
+    NOTPRIMARY,
+    BUSY
+  };
   typedef int status;
-  enum rpc_numbers {
+  enum rpc_numbers
+  {
     invoke = 0x9001,
     members,
   };
 };
 
-
-struct viewstamp {
-  viewstamp (unsigned int _vid = 0, unsigned int _seqno = 0) {
+struct viewstamp
+{
+  viewstamp(unsigned int _vid = 0, unsigned int _seqno = 0)
+  {
     vid = _vid;
     seqno = _seqno;
   };
@@ -24,47 +32,60 @@ struct viewstamp {
   unsigned int seqno;
 };
 
-class rsm_protocol {
- public:
-  enum xxstatus { OK, ERR, BUSY};
+class rsm_protocol
+{
+public:
+  enum xxstatus
+  {
+    OK,
+    ERR,
+    BUSY
+  };
   typedef int status;
-  enum rpc_numbers {
+  enum rpc_numbers
+  {
     invoke = 0x10001,
     transferreq,
     transferdonereq,
     joinreq,
   };
 
-  struct transferres {
+  struct transferres
+  {
     std::string state;
     viewstamp last;
   };
-  
-  struct joinres {
+
+  struct joinres
+  {
     std::string log;
   };
 };
 
-inline bool operator==(viewstamp a, viewstamp b) {
+inline bool operator==(viewstamp a, viewstamp b)
+{
   return a.vid == b.vid && a.seqno == b.seqno;
 }
 
-inline bool operator>(viewstamp a, viewstamp b) {
+inline bool operator>(viewstamp a, viewstamp b)
+{
   return (a.vid > b.vid) || ((a.vid == b.vid) && a.seqno > b.seqno);
 }
 
-inline bool operator!=(viewstamp a, viewstamp b) {
+inline bool operator!=(viewstamp a, viewstamp b)
+{
   return a.vid != b.vid || a.seqno != b.seqno;
 }
 
-inline marshall& operator<<(marshall &m, viewstamp v)
+inline marshall &operator<<(marshall &m, viewstamp v)
 {
   m << v.vid;
   m << v.seqno;
   return m;
 }
 
-inline unmarshall& operator>>(unmarshall &u, viewstamp &v) {
+inline unmarshall &operator>>(unmarshall &u, viewstamp &v)
+{
   u >> v.vid;
   u >> v.seqno;
   return u;
@@ -100,14 +121,20 @@ operator>>(unmarshall &u, rsm_protocol::joinres &r)
   return u;
 }
 
-class rsm_test_protocol {
- public:
-  enum xxstatus { OK, ERR};
+class rsm_test_protocol
+{
+public:
+  enum xxstatus
+  {
+    OK,
+    ERR
+  };
   typedef int status;
-  enum rpc_numbers {
+  enum rpc_numbers
+  {
     net_repair = 0x12001,
     breakpoint = 0x12002,
   };
 };
 
-#endif 
+#endif

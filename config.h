@@ -5,14 +5,16 @@
 #include <vector>
 #include "paxos.h"
 
-class config_view_change {
- public:
+class config_view_change
+{
+public:
   virtual void commit_change(unsigned vid) = 0;
   virtual ~config_view_change() {};
 };
 
-class config : public paxos_change {
- private:
+class config : public paxos_change
+{
+private:
   acceptor *acc;
   proposer *pro;
   rpcs *pxsrpc;
@@ -30,13 +32,15 @@ class config : public paxos_change {
   std::vector<std::string> get_view_wo(unsigned instance);
   bool remove_wo(std::string);
   void reconstruct();
-  typedef enum {
-    OK,	// response and same view #
-    VIEWERR,	// response but different view #
-    FAILURE,	// no response
+  typedef enum
+  {
+    OK,      // response and same view #
+    VIEWERR, // response but different view #
+    FAILURE, // no response
   } heartbeat_t;
   heartbeat_t doheartbeat(std::string m);
- public:
+
+public:
   config(std::string _first, std::string _me, config_view_change *_vc);
   unsigned vid() { return myvid; }
   std::string myaddr() { return me; };

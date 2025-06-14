@@ -11,9 +11,9 @@
 #include <arpa/inet.h>
 #include "config.h"
 
-
-class rsm : public config_view_change {
- protected:
+class rsm : public config_view_change
+{
+protected:
   std::map<int, handler *> procs;
   config *cfg;
   class rsm_state_transfer *stf;
@@ -21,13 +21,13 @@ class rsm : public config_view_change {
   // On slave: expected viewstamp of next invoke request
   // On primary: viewstamp for the next request from rsm_client
   viewstamp myvs;
-  viewstamp last_myvs;   // Viewstamp of the last executed request
+  viewstamp last_myvs; // Viewstamp of the last executed request
   std::string primary;
-  bool insync; 
+  bool insync;
   bool inviewchange;
-  unsigned vid_commit;  // Latest view id that is known to rsm layer
-  unsigned vid_insync;  // The view id that this node is synchronizing for
-  std::vector<std::string> backups;   // A list of unsynchronized backups
+  unsigned vid_commit;              // Latest view id that is known to rsm layer
+  unsigned vid_insync;              // The view id that this node is synchronizing for
+  std::vector<std::string> backups; // A list of unsynchronized backups
 
   // For testing purposes
   rpcs *testsvr;
@@ -36,16 +36,15 @@ class rsm : public config_view_change {
   bool break1;
   bool break2;
 
-
-  rsm_client_protocol::status client_members(int i, 
-					     std::vector<std::string> &r);
-  rsm_protocol::status invoke(int proc, viewstamp vs, std::string mreq, 
-			      int &dummy);
+  rsm_client_protocol::status client_members(int i,
+                                             std::vector<std::string> &r);
+  rsm_protocol::status invoke(int proc, viewstamp vs, std::string mreq,
+                              int &dummy);
   rsm_protocol::status transferreq(std::string src, viewstamp last, unsigned vid,
-				   rsm_protocol::transferres &r);
+                                   rsm_protocol::transferres &r);
   rsm_protocol::status transferdonereq(std::string m, unsigned vid, int &);
-  rsm_protocol::status joinreq(std::string src, viewstamp last, 
-			       rsm_protocol::joinres &r);
+  rsm_protocol::status joinreq(std::string src, viewstamp last,
+                               rsm_protocol::joinres &r);
   rsm_test_protocol::status test_net_repairreq(int heal, int &r);
   rsm_test_protocol::status breakpointreq(int b, int &r);
 
@@ -54,8 +53,8 @@ class rsm : public config_view_change {
   pthread_cond_t recovery_cond;
   pthread_cond_t sync_cond;
 
-  rsm_client_protocol::status client_invoke(int procno, std::string req, 
-              std::string &r);
+  rsm_client_protocol::status client_invoke(int procno, std::string req,
+                                            std::string &r);
   bool statetransfer(std::string m);
   bool statetransferdone(std::string m);
   bool join(std::string m);
@@ -68,15 +67,15 @@ class rsm : public config_view_change {
   void breakpoint2();
   void partition1();
   void commit_change_wo(unsigned vid);
- public:
-  rsm (std::string _first, std::string _me);
+
+public:
+  rsm(std::string _first, std::string _me);
   ~rsm() {};
 
   bool amiprimary();
   void set_state_transfer(rsm_state_transfer *_stf) { stf = _stf; };
   void recovery();
   void commit_change(unsigned vid);
-
 };
 
 #endif /* rsm_h */
