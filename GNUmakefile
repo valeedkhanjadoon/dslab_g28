@@ -32,7 +32,7 @@ LDLIBS += $(shell test -f `gcc -print-file-name=libdl.so` && echo -ldl)
 CC = g++
 CXX = g++
 
-lab:  lab5
+lab:  lab7
 lab1: rpc/rpctest lock_server lock_tester lock_demo
 lab2: yfs_client extent_server
 lab3: yfs_client extent_server
