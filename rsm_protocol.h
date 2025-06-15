@@ -70,6 +70,19 @@ inline unmarshall& operator>>(unmarshall &u, viewstamp &v) {
   return u;
 }
 
+// Add this overload for marshall to handle size_t
+inline marshall& operator<<(marshall &m, size_t s) {
+  m << static_cast<uint64_t>(s); // Convert size_t to uint64_t for serialization
+  return m;
+}
+
+inline unmarshall& operator>>(unmarshall &u, size_t &s) {
+  uint64_t temp;
+  u >> temp; // Deserialize into a temporary uint64_t
+  s = static_cast<size_t>(temp); // Convert back to size_t
+  return u;
+}
+
 inline marshall &
 operator<<(marshall &m, rsm_protocol::transferres r)
 {

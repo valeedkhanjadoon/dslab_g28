@@ -91,7 +91,7 @@ ifeq ($(LAB4GE),1)
 yfs_client += lock_client.cc
 endif
 ifeq ($(LAB8GE),1)
-yfs_client += rsm_client.cc lock_client_cache_rsm.cc
+yfs_client += rsm_client.cc lock_client_cache_rsm.cc handle.cc $(rsm_files)
 endif
 ifeq ($(LAB5GE),1)
 yfs_client += lock_client_cache.cc
@@ -115,6 +115,10 @@ rsm_tester: $(patsubst %.cc,%.o,$(rsm_tester)) rpc/librpc.a
 
 fuse.o: fuse.cc
 	$(CXX) -c $(CXXFLAGS) $(FUSEFLAGS) $(MACFLAGS) $<
+
+# Add dependency ordering
+rsm_client.o: rsm.o paxos.o config.o log.o handle.o
+lock_server_cache_rsm.o: rsm.o paxos.o config.o log.o handle.o
 
 l1:
 	./mklab.pl 1 0 l1 GNUmakefile $(rpclib) $(rpctest) $(lock_server)\

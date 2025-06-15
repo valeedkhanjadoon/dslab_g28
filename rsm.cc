@@ -82,6 +82,7 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
+#include <unistd.h>
 #include "handle.h"
 #include "rsm.h"
 #include "tprintf.h"
