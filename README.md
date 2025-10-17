@@ -1,9 +1,4 @@
-# dslab_g28
-A group project of Distributed Systems. Team Members: Farhan Mahmood Qureshi (7075067), Waleed Khan Jadoon (7075346).
+# Distributed Systems Project (dslab_g28 > Group 28) 
 
----
+Yet Another File System (yfs), a project developed for the course of Distributed Systems at Saarland University (Uds).
 
-# Lab 01 Submission:
-SHA256 Checksum: 66f85abb6f5a656040577008f6b733dc40e0f41890c9ff32a582bc7da7d15ce9
-
----
